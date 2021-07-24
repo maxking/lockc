@@ -11,9 +11,19 @@ set -eux
 # 169.254.2.3 is the host's address in qemu user mode networking.
 echo "nameserver 169.254.2.3" > /etc/resolv.conf
 
+zypper install -y \
+    tumbleweed-cli
+
+# Temporary workaround for BTF issues with kernel 5.13.x.
+# See: https://github.com/rancher-sandbox/lockc/issues/27
+# The snapshot we are switching here to is the last one with 5.12.x.
+# TODO(vadorovsky): Fix it properly.
+tumbleweed init
+tumbleweed switch 20210704
+
 zypper ref
-zypper up
-zypper dup
+zypper up -y
+zypper dup -y
 
 zypper install -y -t pattern \
     devel_basis \
@@ -32,7 +42,7 @@ zypper install -y \
     ethtool \
     jq \
     kernel-default \
-    -kernel-default-base \
+    -kernel-default-base* \
     libbpf-devel \
     libopenssl-devel \
     llvm \
