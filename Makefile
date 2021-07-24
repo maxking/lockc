@@ -10,6 +10,7 @@ CONTAINERIZED_BUILD ?= 1
 PREFIX ?= $(DESTDIR)/usr/local
 BINDIR ?= $(PREFIX)/bin
 UNITDIR ?= $(PREFIX)/lib/systemd/system
+ETCDIR ?= $(DESTDIR)/etc
 
 ifneq ($(KERNEL_TAG),)
 EXTRA_DOCKER_FLAGS += --build-arg KERNEL_TAG=$(KERNEL_TAG)
@@ -103,10 +104,9 @@ endif
 
 .PHONY: install
 install:
-ifeq ($(CONTAINERIZED_BUILD),0)
-	# Do not install the unit file in the OCI artifact. Keep only binaries
-	# there.
-	install -D -m 644 contrib/systemd/lockcd.service $(UNITDIR)/lockcd.service
-endif
+	install -D -m 644 contrib/systemd/lockcd.service.in $(UNITDIR)/lockcd.service
+	sed -i -e "s|\@PREFIX\@|$(PREFIX)|" $(UNITDIR)/lockcd.service
 	install -D -m 755 $(OUTDIR)/lockcd $(BINDIR)/lockcd
 	install -D -m 755 $(OUTDIR)/lockc-runc-wrapper $(BINDIR)/lockc-runc-wrapper
+	install -D -m 644 contrib/etc/containerd/config.toml /etc/containerd/config.toml
+	install -D -m 644 contrib/etc/docker/daemon.json /etc/docker/daemon.json
